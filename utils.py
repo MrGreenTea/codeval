@@ -1,4 +1,5 @@
 import ast
+import itertools
 import re
 import collections
 import typing
@@ -21,3 +22,32 @@ def get_calls(code: typing.Iterable[ast.stmt]) -> typing.Iterator[ast.Call]:
 
 def get_params(call: ast.Call):
     return call.args
+
+
+def get_defs(code):
+    code = reformat_code(code)
+    try:
+        m = ast.parse(code)
+    except SyntaxError:
+        return {}
+    defs = collections.defaultdict(list)
+    for call in utils.get_calls(m.body):
+        defs[call].append(utils.get_params(call))
+    return defs
+
+
+def reformat_code(old_code):
+    """Moves imports to top."""
+
+    def line_type(line: str):
+        if line.startswith('import ') or line.startswith('from '):
+            return 'import'
+        else:
+            return 'code'
+
+    new_code = ''
+    for _, g in itertools.groupby(sorted(old_code.split('\n'), key=line_type, reverse=True), key=line_type):
+        g = list(filter(str.strip, g))
+        new_code += '\n'.join(g) + '\n'
+
+    return new_code
