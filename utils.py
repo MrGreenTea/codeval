@@ -31,8 +31,8 @@ def get_defs(code):
     except SyntaxError:
         return {}
     defs = collections.defaultdict(list)
-    for call in utils.get_calls(m.body):
-        defs[call].append(utils.get_params(call))
+    for call in get_calls(m.body):
+        defs[call].append(get_params(call))
     return defs
 
 
